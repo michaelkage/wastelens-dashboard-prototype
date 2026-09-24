@@ -1,1 +1,0 @@
-import{NextResponse}from'next/server';export async function POST(req:Request){const body=await req.json();const res=NextResponse.json({ok:true,role:body.role,name:body.name});res.cookies.set('wastelens_role',body.role,{httpOnly:true,sameSite:'lax',maxAge:28800,path:'/'});return res}
