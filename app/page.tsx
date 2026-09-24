@@ -1,172 +1,43 @@
 'use client'
+import {useEffect,useMemo,useRef,useState} from 'react'
+import {Activity,BarChart3,Bell,CheckCircle2,ChevronRight,Download,Factory,Leaf,LogIn,PackageCheck,Radio,RefreshCw,Send,Truck,Upload,Users,Waves,Zap} from 'lucide-react'
 
-import { useState } from 'react'
-import {
-  Activity,
-  ArrowUpRight,
-  Bell,
-  Camera,
-  CheckCircle2,
-  ChevronRight,
-  CircleDot,
-  Factory,
-  Leaf,
-  MapPin,
-  PackageCheck,
-  Radio,
-  Route,
-  Send,
-  ShieldCheck,
-  Truck,
-  Waves,
-  Zap,
-} from 'lucide-react'
+type Role='admin'|'operator'|'analyst'
+type Node={id:string;name:string;location:string;fill:number;capacity:number;status:string;collectedToday:number;lastSeen:string;trend:number;lat:number;lng:number}
+type Detection={label:string;confidence:number;material:string;massKg:number;action:string}
+type Dashboard={metrics:{waste:number;yield:number;value:number;capacity:number};nodes:Node[];detections:Detection[];history:{date:string;kg:number;collections:number}[];hotspots:{name:string;score:number;kg:number}[];recommendations:string[];routes:{material:string;destination:string;output:string;loadKg:number}[]}
+const demoUsers=[{email:'admin@wastelens.local',password:'admin123',role:'admin' as Role,name:'WasteLens Admin'},{email:'operator@wastelens.local',password:'operator123',role:'operator' as Role,name:'Field Operator'},{email:'analyst@wastelens.local',password:'analyst123',role:'analyst' as Role,name:'Data Analyst'}]
 
-const metrics = [
-  { label: 'Total waste intercepted today', value: '142.4', unit: 'kg', change: '+18.6%', icon: Waves, tone: 'emerald' },
-  { label: 'Target micro-factory yield', value: '568', unit: 'tiles', change: 'next batch', icon: Factory, tone: 'lime' },
-  { label: 'Supply chain market value', value: '₦64,080', unit: '', change: '+₦8,420', icon: ArrowUpRight, tone: 'amber' },
-  { label: 'System-wide trap capacity', value: '82', unit: '%', change: '18% headroom', icon: Activity, tone: 'orange' },
-]
-
-const detections = [
-  { label: 'LDPE Nylon Sachet', confidence: '94%', className: 'detection-red box-one' },
-  { label: 'PET Bottle', confidence: '89%', className: 'detection-blue box-two' },
-  { label: 'LDPE Nylon Sachet', confidence: '91%', className: 'detection-red box-three' },
-]
-
-const productRoutes = [
-  { type: 'PET', examples: 'Bottles', becomes: 'Polyester thread, new bottles, paving tiles', icon: '↗' },
-  { type: 'HDPE', examples: 'Jugs + detergent bottles', becomes: 'School desks, crates, pipes', icon: '◆' },
-  { type: 'PP', examples: 'Caps + yogurt cups', becomes: 'Buckets, basins, plastic furniture', icon: '●' },
-  { type: 'LDPE', examples: 'Sachets + nylon bags', becomes: 'Plastic lumber, benches, road asphalt', icon: '≈' },
-]
-
-export default function Page() {
-  const [dispatchSent, setDispatchSent] = useState(false)
-
-  return (
-    <main className="min-h-screen overflow-hidden bg-[#f4f7f3] text-[#14251d]">
-      <div className="mx-auto max-w-[1560px] px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
-        <header className="flex flex-col gap-5 border-b border-[#d8e3dc] pb-6 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#123d2b] text-[#d7f36d] shadow-[0_8px_24px_rgba(18,61,43,.18)]">
-              <Leaf aria-hidden="true" className="size-5" strokeWidth={2.2} />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#709080]">Operations intelligence</p>
-              <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#123d2b] sm:text-2xl">WasteLens <span className="font-normal text-[#7f9389]">// AI Analytics</span></h1>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-[#f2b6ad] bg-[#fff5f3] px-4 py-2 text-xs font-bold tracking-wide text-[#bd493d] shadow-sm">
-              <span className="size-2 animate-pulse rounded-full bg-[#d94b3f]" />
-              CRITICAL LEVEL ACTIVE: Surulere Node 04
-            </div>
-            <div className="hidden items-center gap-2 rounded-full border border-[#d8e3dc] bg-white px-3 py-2 text-xs font-medium text-[#688075] sm:flex">
-              <Radio className="size-3.5 text-[#13865f]" /> 12 nodes online
-            </div>
-            <button aria-label="View alerts" className="flex size-9 items-center justify-center rounded-full border border-[#d8e3dc] bg-white text-[#527065] transition hover:border-[#8bb69e] hover:text-[#123d2b]"><Bell className="size-4" /></button>
-          </div>
-        </header>
-
-        <section aria-label="Key performance indicators" className="grid gap-3 py-6 sm:grid-cols-2 xl:grid-cols-4">
-          {metrics.map((metric) => {
-            const Icon = metric.icon
-            return (
-              <article key={metric.label} className="relative overflow-hidden rounded-2xl border border-[#dce7df] bg-white p-5 shadow-[0_7px_24px_rgba(26,70,49,.045)]">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="max-w-[175px] text-[11px] font-bold uppercase leading-4 tracking-[0.14em] text-[#789086]">{metric.label}</p>
-                  <div className={`flex size-9 items-center justify-center rounded-xl ${metric.tone === 'emerald' ? 'bg-[#e5f6ed] text-[#14845d]' : metric.tone === 'lime' ? 'bg-[#f0f8d4] text-[#6b8c1e]' : 'bg-[#fff2da] text-[#c17a18]'}`}><Icon className="size-4" /></div>
-                </div>
-                <div className="mt-5 flex items-end gap-1.5">
-                  <span className="text-3xl font-semibold tracking-[-0.06em] text-[#16382a]">{metric.value}</span>
-                  <span className="mb-1 text-xs font-semibold text-[#789086]">{metric.unit}</span>
-                </div>
-                <p className={`mt-2 text-xs font-semibold ${metric.tone === 'orange' ? 'text-[#c17a18]' : 'text-[#18835d]'}`}>{metric.change}</p>
-                {metric.tone === 'orange' && <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#f7ead3]"><div className="h-full w-[82%] rounded-full bg-[#e0a33e]" /></div>}
-              </article>
-            )
-          })}
-        </section>
-
-        <section className="grid gap-5 xl:grid-cols-[1.12fr_.88fr]">
-          <article className="rounded-2xl border border-[#dce7df] bg-white p-4 shadow-[0_7px_24px_rgba(26,70,49,.045)] sm:p-5">
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#769085]"><Camera className="size-3.5 text-[#1a8a61]" /> Edge vision / camera 04</div>
-                <h2 className="text-lg font-semibold tracking-[-0.03em] text-[#17382a]">Live Edge Stream <span className="font-normal text-[#8ba097]">— TideTrap Cam 04</span></h2>
-              </div>
-              <div className="flex items-center gap-2 rounded-full bg-[#fff0ed] px-3 py-1.5 text-[10px] font-bold tracking-[0.12em] text-[#c64f43]"><span className="size-1.5 animate-pulse rounded-full bg-[#dd5044]" /> LIVE FEED // AI SORTING ACTIVE</div>
-            </div>
-            <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-[#123d2b]" aria-label="Stylized live waterway camera feed">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_30%,rgba(93,170,145,.55),transparent_38%),linear-gradient(145deg,#0a382f,#176457_52%,#092f2b)]" />
-              <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(192,238,203,.35)_1px,transparent_1px),linear-gradient(90deg,rgba(192,238,203,.35)_1px,transparent_1px)] [background-size:40px_40px]" />
-              <div className="absolute -left-10 top-1/2 h-24 w-[120%] -rotate-6 rounded-[50%] border-y border-[#9ce2c2]/30 bg-[#65bca0]/10 blur-[1px]" />
-              <div className="absolute left-[15%] top-[25%] h-4 w-11 rotate-12 rounded bg-white/50 shadow-[12px_14px_0_#d7e9d0,40px_-7px_0_#d1e1d0]" />
-              <div className="absolute bottom-[20%] right-[16%] h-8 w-5 rotate-12 rounded-sm border border-white/40 bg-[#dbf1e1]/60 shadow-[18px_-7px_0_#e8c69b]" />
-              <div className="absolute bottom-[10%] left-[8%] text-[10px] font-medium tracking-[0.16em] text-white/65">SURULERE CANAL 04 / 1080P / 24 FPS</div>
-              {detections.map((detection) => <div key={`${detection.label}-${detection.confidence}`} className={`absolute ${detection.className}`}><div className="whitespace-nowrap rounded-sm px-2 py-1 text-[10px] font-bold tracking-wide text-white">[{detection.label} · Conf: {detection.confidence}]</div></div>)}
-              <div className="absolute right-3 top-3 flex items-center gap-2 rounded-md border border-white/20 bg-[#082a25]/55 px-2 py-1.5 text-[10px] font-semibold text-[#dcf7df]"><ShieldCheck className="size-3.5 text-[#a8e467]" /> SORTING MODEL v2.4</div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[#edf2ee] pt-4 text-center">
-              <div><p className="text-lg font-semibold text-[#17382a]">03</p><p className="text-[10px] uppercase tracking-wider text-[#8ba097]">Objects found</p></div>
-              <div><p className="text-lg font-semibold text-[#17382a]">96.2%</p><p className="text-[10px] uppercase tracking-wider text-[#8ba097]">Model accuracy</p></div>
-              <div><p className="text-lg font-semibold text-[#17382a]">7.46 kg</p><p className="text-[10px] uppercase tracking-wider text-[#8ba097]">Payload ready</p></div>
-            </div>
-          </article>
-
-          <article className="flex flex-col rounded-2xl border border-[#dce7df] bg-white p-4 shadow-[0_7px_24px_rgba(26,70,49,.045)] sm:p-5">
-            <div className="mb-5 flex items-start justify-between gap-3"><div><div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#769085]"><Route className="size-3.5 text-[#1a8a61]" /> Material intelligence</div><h2 className="text-lg font-semibold tracking-[-0.03em] text-[#17382a]">Circular Economy Routing <span className="font-normal text-[#8ba097]">& Hotspots</span></h2></div><span className="rounded-full bg-[#edf8e8] px-2.5 py-1 text-[10px] font-bold text-[#3b7c45]">AUTO-ROUTING ON</span></div>
-            <div className="flex flex-col gap-3">
-              <RoutingRow icon={<PackageCheck className="size-4" />} title="LDPE Pure Water Sachets" destination="Micro-Factory #2" output="Paving Tiles" tone="green" />
-              <RoutingRow icon={<Truck className="size-4" />} title="HDPE Detergent Jugs" destination="Hub Alapere" output="School Desks" tone="amber" />
-            </div>
-            <div className="mt-5 flex-1 rounded-xl border border-[#dce7df] bg-[#f3f8f2] p-3">
-              <div className="mb-2 flex items-center justify-between"><p className="text-xs font-bold text-[#345548]">Predictive hotspot map</p><div className="flex items-center gap-1.5 text-[10px] text-[#7a9186]"><MapPin className="size-3" /> Live model</div></div>
-              <div className="relative min-h-[180px] overflow-hidden rounded-lg bg-[#dcecdf] [background-image:linear-gradient(38deg,transparent_45%,rgba(86,145,111,.22)_46%,rgba(86,145,111,.22)_48%,transparent_49%),linear-gradient(145deg,transparent_47%,rgba(86,145,111,.16)_48%,rgba(86,145,111,.16)_50%,transparent_51%)]">
-                <div className="absolute left-[8%] top-[58%] h-32 w-64 -rotate-[20deg] rounded-[48%] border-[18px] border-[#b0d4bd]/55" /><div className="absolute right-[10%] top-[14%] h-24 w-44 rotate-[32deg] rounded-[48%] border-[12px] border-[#b0d4bd]/45" />
-                <Hotspot label="Surulere Canal" value="82%" className="left-[20%] top-[27%]" critical /><Hotspot label="Makoko Node A" value="34%" className="left-[55%] top-[64%]" /><Hotspot label="Lekki Channel 2" value="12%" className="right-[12%] top-[22%]" />
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <section className="mt-5 grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
-          <article className="rounded-2xl border border-[#dce7df] bg-white p-5 shadow-[0_7px_24px_rgba(26,70,49,.045)] sm:p-6">
-            <div className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#769085]"><Leaf className="size-3.5 text-[#1a8a61]" /> Mission control / why WasteLens exists</div>
-            <h2 className="max-w-xl text-xl font-semibold leading-tight tracking-[-0.04em] text-[#17382a]">Stop plastic early. Understand it. Turn it into something useful.</h2>
-            <p className="mt-3 text-sm leading-6 text-[#6b8378]">WasteLens serves residents, market traders and coastal communities affected by flooding and blocked drainage. TideTrap captures the litter before it reaches the lagoon; this dashboard makes every kilogram traceable.</p>
-            <div className="mt-5 grid grid-cols-3 gap-2 border-t border-[#edf2ee] pt-4 text-center">
-              <div><p className="text-lg font-semibold text-[#17382a]">2.5M</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">Tons / year</p></div>
-              <div><p className="text-lg font-semibold text-[#17382a]">&lt;12%</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">Recycled</p></div>
-              <div><p className="text-lg font-semibold text-[#17382a]">4</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">SDGs served</p></div>
-            </div>
-          </article>
-          <article className="rounded-2xl border border-[#dce7df] bg-white p-5 shadow-[0_7px_24px_rgba(26,70,49,.045)] sm:p-6">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#769085]"><Factory className="size-3.5 text-[#1a8a61]" /> Material recovery ledger</div><h2 className="text-lg font-semibold tracking-[-0.03em] text-[#17382a]">From TideTrap capture to community product</h2></div><span className="rounded-full bg-[#f0f8d4] px-2.5 py-1 text-[10px] font-bold text-[#66871c]">CIRCULAR LOOP</span></div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {productRoutes.map((route) => <div key={route.type} className="rounded-xl border border-[#e1ebe4] bg-[#fbfdfb] p-3"><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-bold text-[#305546]">{route.type} <span className="font-normal text-[#80958b]">/ {route.examples}</span></p><p className="mt-2 text-[11px] leading-4 text-[#71887d]">Sorted into <strong className="text-[#397154]">{route.becomes}</strong></p></div><span aria-hidden="true" className="text-lg font-semibold text-[#a9ca52]">{route.icon}</span></div></div>)}
-            </div>
-            <div className="mt-3 flex items-center gap-2 rounded-lg bg-[#f3f8f2] px-3 py-2 text-[10px] font-semibold text-[#527363]"><CircleDot className="size-3 text-[#1a8a61]" /> Mixed and dirty plastics are routed to Micro-Factory #2 for paving tiles and roofing sheets.</div>
-          </article>
-        </section>
-
-        <section className="mt-5 flex flex-col gap-4 rounded-2xl border border-[#d8e3dc] bg-[#123d2b] p-5 text-white shadow-[0_12px_32px_rgba(18,61,43,.14)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
-          <div><div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#a7d9b5]"><Zap className="size-3.5" /> Demo control center</div><h2 className="text-xl font-semibold tracking-[-0.03em]">Ready to move today&apos;s recovered material?</h2><p className="mt-1 text-sm text-[#c2ddce]">Notify the next node and keep the circular supply chain moving.</p></div>
-          <button onClick={() => setDispatchSent(true)} className="group flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#d7f36d] px-5 py-3 text-sm font-bold text-[#153622] shadow-[0_6px_18px_rgba(215,243,109,.18)] transition hover:bg-[#e5fb91] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d7f36d]"><Send className="size-4 transition-transform group-hover:translate-x-0.5" /> Simulate Automated Logistics Dispatch <ChevronRight className="size-4" /></button>
-        </section>
-        {dispatchSent && <div role="status" className="fixed bottom-5 right-5 z-10 flex max-w-[380px] items-start gap-3 rounded-2xl border border-[#a8dfbf] bg-white p-4 text-sm text-[#244e39] shadow-[0_14px_40px_rgba(18,61,43,.18)]"><CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#168b60]" /><div><p className="font-bold">SMS Dispatch Alert Sent</p><p className="mt-1 text-xs leading-5 text-[#6d8579]">Micro-Factory #2 team notified. Pickup payload scheduled: <strong className="text-[#385e4a]">7.46kg LDPE</strong>.</p></div><button aria-label="Dismiss dispatch notification" onClick={() => setDispatchSent(false)} className="ml-2 text-lg leading-none text-[#91a79b] hover:text-[#17382a]">×</button></div>}
-      </div>
-    </main>
-  )
+export default function Page(){
+ const[data,setData]=useState<Dashboard|null>(null),[tab,setTab]=useState<'overview'|'nodes'|'analytics'|'vision'|'admin'>('overview'),[role,setRole]=useState<Role>('admin'),[user,setUser]=useState('Demo Admin'),[showLogin,setShowLogin]=useState(false),[login,setLogin]=useState({email:'admin@wastelens.local',password:'admin123'}),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[image,setImage]=useState<string|null>(null),[analysis,setAnalysis]=useState<Detection[]|null>(null);const fileRef=useRef<HTMLInputElement>(null)
+ async function refresh(){const r=await fetch('/api/dashboard',{cache:'no-store'});if(r.ok)setData(await r.json())}
+ useEffect(()=>{refresh();const id=setInterval(refresh,5000);return()=>clearInterval(id)},[])
+ async function dispatch(){setBusy(true);const r=await fetch('/api/dispatch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nodeId:'tt-04',material:'LDPE',massKg:7.46,destination:'Micro-Factory #2'})});setNotice((await r.json()).message);setBusy(false);refresh()}
+ async function doLogin(){const u=demoUsers.find(x=>x.email===login.email&&x.password===login.password);if(!u){setNotice('Demo login failed.');return}await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(u)});setRole(u.role);setUser(u.name);setShowLogin(false);setNotice('Signed in as '+u.role)}
+ async function analyze(file:File){setBusy(true);setImage(URL.createObjectURL(file));const form=new FormData();form.append('image',file);const r=await fetch('/api/analyze',{method:'POST',body:form});const b=await r.json();setAnalysis(b.detections||[]);setNotice(b.model||'Vision analysis complete');setBusy(false);refresh()}
+ async function exportReport(){const r=await fetch('/api/reports?format=csv');const blob=await r.blob();const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='wastelens-report.csv';a.click();URL.revokeObjectURL(u)}
+ const total=useMemo(()=>data?.history.reduce((a,h)=>a+h.kg,0)??0,[data])
+ if(!data)return <main className="min-h-screen bg-[#071d16] grid place-items-center text-white"><div className="text-center"><div className="mx-auto mb-4 size-12 animate-pulse rounded-2xl bg-[#d7f36d]"/><p className="text-sm text-[#b8d1c4]">Initializing WasteLens intelligence layer…</p></div></main>
+ return <main className="min-h-screen bg-[#f3f7f4] text-[#14251d]"><div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
+  <header className="flex flex-col gap-5 border-b border-[#d8e3dc] pb-5 xl:flex-row xl:items-center xl:justify-between"><div className="flex items-center gap-3"><div className="grid size-11 place-items-center rounded-2xl bg-[#123d2b] text-[#d7f36d] shadow-lg"><Leaf className="size-5"/></div><div><p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#709080]">Terranova // JAN innovation project</p><h1 className="text-xl font-semibold text-[#123d2b] sm:text-2xl">WasteLens <span className="font-normal text-[#7f9389]">// AI Analytics</span></h1></div></div><div className="flex flex-wrap items-center gap-2"><div className="flex items-center gap-2 rounded-full border border-[#bfe1cd] bg-white px-3 py-2 text-xs font-semibold text-[#337155]"><span className="size-2 animate-pulse rounded-full bg-[#28a66f]"/>{data.nodes.filter(n=>n.status==='online').length} nodes online</div><div className="rounded-full bg-[#123d2b] px-3 py-2 text-xs font-bold text-[#d7f36d]">{user} · {role}</div><button onClick={()=>setShowLogin(true)} className="flex items-center gap-2 rounded-full border border-[#d8e3dc] bg-white px-3 py-2 text-xs font-semibold"><LogIn className="size-3.5"/> Switch role</button></div></header>
+  <nav className="mt-5 flex flex-wrap gap-2">{(['overview','nodes','analytics','vision','admin'] as const).map(t=><button key={t} onClick={()=>setTab(t)} className={`rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider ${tab===t?'bg-[#123d2b] text-white':'bg-white text-[#60786d]'}`}>{t}</button>)}<button onClick={refresh} className="ml-auto rounded-xl border bg-white p-2"><RefreshCw className="size-4"/></button></nav>
+  {tab==='overview'&&<><section className="grid gap-3 py-5 sm:grid-cols-2 xl:grid-cols-4">{[['Waste intercepted today',`${data.metrics.waste.toFixed(1)} kg`,Waves],['Predicted factory yield',`${data.metrics.yield} tiles`,Factory],['Recovered supply value',`₦${data.metrics.value.toLocaleString()}`,BarChart3],['Trap capacity',`${data.metrics.capacity}%`,Activity]].map(([l,v,I])=><article key={l as string} className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex justify-between"><p className="text-[10px] font-bold uppercase tracking-wider text-[#789086]">{l as string}</p><I className="size-4 text-[#168b60]"/></div><p className="mt-4 text-3xl font-semibold">{v as string}</p><p className="mt-2 text-xs font-semibold text-[#18835d]">Live model estimate</p></article>)}</section>
+   <section className="grid gap-5 xl:grid-cols-[1.1fr_.9fr]"><article className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Edge vision / TideTrap Cam 04</p><h2 className="mt-1 text-lg font-semibold">Live capture intelligence</h2></div><span className="rounded-full bg-[#fff0ed] px-3 py-1 text-[10px] font-bold text-[#c64f43]">● LIVE</span></div><div className="relative mt-4 aspect-video overflow-hidden rounded-xl bg-[#0a382f]"><div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_30%,rgba(93,170,145,.55),transparent_38%),linear-gradient(145deg,#0a382f,#176457_52%,#092f2b)]"/>{data.detections.slice(0,3).map((d,i)=><div key={i} className="absolute rounded border-2 border-[#d7f36d]/80 bg-[#d7f36d]/10 p-1" style={{left:`${15+i*25}%`,top:`${22+i*13}%`,width:`${22-i*3}%`,height:`${22+i*2}%`}}><span className="rounded bg-[#123d2b] px-1.5 py-1 text-[9px] font-bold text-white">{d.label} · {(d.confidence*100).toFixed(0)}%</span></div>)}<div className="absolute bottom-3 left-3 text-[9px] font-bold tracking-wider text-white/70">SURULERE CANAL 04 · TELEMETRY STREAM</div><div className="absolute right-3 top-3 rounded bg-[#082a25]/70 px-2 py-1 text-[9px] font-bold text-[#dcf7df]">CV ENGINE v2.5</div></div><div className="mt-4 grid grid-cols-3 gap-2 text-center"><Stat n={String(data.detections.length).padStart(2,'0')} l="objects"/><Stat n="96.2%" l="confidence"/><Stat n={`${data.detections.reduce((a,d)=>a+d.massKg,0).toFixed(2)} kg`} l="payload"/></div></article>
+   <article className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><Zap className="size-5 text-[#8da92b]"/><div><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Decision engine</p><h2 className="text-lg font-semibold">Predictions & recommendations</h2></div></div><div className="mt-4 space-y-2">{data.recommendations.map((x,i)=><div key={i} className="rounded-xl border bg-[#fbfdfb] p-3 text-xs leading-5 text-[#4f6d60]"><b className="text-[#275541]">AI:</b> {x}</div>)}</div><div className="mt-4 rounded-xl bg-[#123d2b] p-4 text-white"><div className="flex items-center gap-2 text-[10px] font-bold uppercase text-[#a7d9b5]"><Truck className="size-3.5"/> Collection prediction</div><p className="mt-2 text-sm">Highest-pressure node is projected to cross its next collection threshold within the next operating window.</p></div></article></section>
+   <section className="mt-5 grid gap-5 lg:grid-cols-2"><article className="rounded-2xl border bg-white p-5 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Predictive hotspot analysis</p><h2 className="mt-1 text-lg font-semibold">Where intervention pressure is building</h2><div className="mt-4 space-y-3">{data.hotspots.map(h=><div key={h.name}><div className="mb-1 flex justify-between text-xs"><span className="font-semibold">{h.name}</span><span>{h.score}% risk · {h.kg}kg forecast</span></div><div className="h-2 overflow-hidden rounded-full bg-[#eaf1ec]"><div className="h-full rounded-full bg-[#d9a34a]" style={{width:`${h.score}%`}}/></div></div>)}</div></article><article className="rounded-2xl border bg-white p-5 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Circular economy routing</p><h2 className="mt-1 text-lg font-semibold">Capture → classify → route → product</h2><div className="mt-4 space-y-2">{data.routes.map(r=><div key={r.material} className="flex items-center gap-3 rounded-xl border p-3"><PackageCheck className="size-4 text-[#168b60]"/><div className="flex-1"><p className="text-xs font-bold">{r.material} · {r.loadKg}kg</p><p className="text-[10px] text-[#789086]">{r.destination} <ChevronRight className="inline size-3"/> {r.output}</p></div></div>)}</div></article></section></>}
+  {tab==='nodes'&&<NodeView data={data} onRefresh={refresh}/>}
+  {tab==='analytics'&&<AnalyticsView data={data} total={total} onExport={exportReport}/>}
+  {tab==='vision'&&<VisionView image={image} analysis={analysis} busy={busy} fileRef={fileRef} onFile={analyze}/>}
+  {tab==='admin'&&<AdminView role={role} onDispatch={dispatch} busy={busy}/>}
+  <footer className="mt-8 flex flex-col gap-2 border-t border-[#d8e3dc] pt-5 text-[10px] text-[#789086] sm:flex-row sm:justify-between"><span>WasteLens is part of <b>Terranova</b>, created by members of <b>Junior Achievement Nigeria (JAN)</b>.</span><span>Prototype intelligence layer · provider-neutral</span></footer>
+ </div>
+ {notice&&<div className="fixed bottom-5 right-5 z-50 flex max-w-[420px] items-center gap-3 rounded-2xl border bg-white p-4 text-sm text-[#244e39] shadow-xl"><CheckCircle2 className="size-5 text-[#168b60]"/><span>{notice}</span><button onClick={()=>setNotice('')} className="ml-2 text-lg">×</button></div>}
+ {showLogin&&<div className="fixed inset-0 z-50 grid place-items-center bg-[#071d16]/60 p-4 backdrop-blur-sm"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"><h2 className="text-xl font-semibold">WasteLens access</h2><p className="mt-1 text-xs text-[#71887d]">Prototype role-based authentication.</p><div className="my-4 space-y-1 rounded-xl bg-[#f3f8f2] p-3 text-[10px] text-[#527363]">{demoUsers.map(u=><div key={u.email}><b>{u.role}</b> · {u.email} · {u.password}</div>)}</div><input value={login.email} onChange={e=>setLogin({...login,email:e.target.value})} className="mb-2 w-full rounded-xl border p-3 text-sm" placeholder="Email"/><input type="password" value={login.password} onChange={e=>setLogin({...login,password:e.target.value})} className="w-full rounded-xl border p-3 text-sm" placeholder="Password"/><div className="mt-4 flex justify-end gap-2"><button onClick={()=>setShowLogin(false)} className="rounded-xl px-4 py-2 text-sm">Cancel</button><button onClick={doLogin} className="rounded-xl bg-[#123d2b] px-4 py-2 text-sm font-bold text-white">Sign in</button></div></div></div>}
+ </main>
 }
-
-function RoutingRow({ icon, title, destination, output, tone }: { icon: React.ReactNode; title: string; destination: string; output: string; tone: 'green' | 'amber' }) {
-  return <div className="flex items-center gap-3 rounded-xl border border-[#e1ebe4] bg-[#fbfdfb] p-3"><div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${tone === 'green' ? 'bg-[#e4f6eb] text-[#18845d]' : 'bg-[#fff0d8] text-[#bc7417]'}`}>{icon}</div><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-[#305546]">{title}</p><div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-[#80958b]"><span>{destination}</span><ChevronRight className="size-3" /><span className="font-semibold text-[#4c7661]">{output}</span></div></div><CircleDot className={`size-3.5 shrink-0 ${tone === 'green' ? 'text-[#54b979]' : 'text-[#e4a23c]'}`} /></div>
-}
-
-function Hotspot({ label, value, className, critical = false }: { label: string; value: string; className: string; critical?: boolean }) {
-  return <div className={`absolute ${className}`}><div className={`relative flex size-4 items-center justify-center rounded-full ${critical ? 'bg-[#d95142]' : 'bg-[#4f9c6a]'} shadow-[0_0_0_5px_rgba(217,81,66,.12)]`}><span className="size-1.5 rounded-full bg-white" /></div><div className="mt-1 whitespace-nowrap rounded-md border border-white/80 bg-white/85 px-1.5 py-1 text-[9px] font-bold text-[#3c5f4d] shadow-sm backdrop-blur-sm">{label} <span className={critical ? 'text-[#c44c40]' : 'text-[#4e9a69]'}>({value})</span></div></div>
-}
-
+function Stat({n,l}:{n:string;l:string}){return <div><p className="text-lg font-semibold">{n}</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">{l}</p></div>}
+function NodeView({data,onRefresh}:{data:Dashboard;onRefresh:()=>void}){return <section className="mt-5 rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Real-time TideTrap telemetry</p><h2 className="text-xl font-semibold">Node operations monitor</h2></div><button onClick={onRefresh} className="rounded-xl bg-[#123d2b] px-4 py-2 text-xs font-bold text-white">Refresh</button></div><div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{data.nodes.map(n=><article key={n.id} className="rounded-xl border p-4"><div className="flex justify-between"><div><p className="text-sm font-bold">{n.name}</p><p className="text-[10px] text-[#80958b]">{n.location} · {n.id}</p></div><span className="rounded-full bg-[#e4f6eb] px-2 py-1 text-[9px] font-bold">{n.status}</span></div><div className="mt-4"><div className="flex justify-between text-[10px]"><span>Fill level</span><b>{n.fill}%</b></div><div className="mt-1 h-2 rounded-full bg-[#edf2ee]"><div className="h-full rounded-full bg-[#d9a34a]" style={{width:`${n.fill}%`}}/></div></div><div className="mt-4 flex justify-between text-[10px] text-[#789086]"><span>{n.collectedToday}kg today</span><span>trend {n.trend>0?'+':''}{n.trend}%</span><span>{n.lastSeen}</span></div></article>)}</div></section>}
+function AnalyticsView({data,total,onExport}:{data:Dashboard;total:number;onExport:()=>void}){const max=Math.max(...data.history.map(h=>h.kg));return <section className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><article className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex justify-between"><div><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Historical analytics</p><h2 className="text-xl font-semibold">Recovery performance</h2></div><button onClick={onExport} className="flex items-center gap-2 rounded-xl bg-[#123d2b] px-4 py-2 text-xs font-bold text-white"><Download className="size-3.5"/> Export CSV</button></div><div className="mt-6 flex h-64 items-end gap-2 border-b">{data.history.map(h=><div key={h.date} className="group flex h-full flex-1 flex-col justify-end"><div title={`${h.kg}kg`} className="mx-auto w-full max-w-10 rounded-t-lg bg-[#65a983]" style={{height:`${Math.max(5,(h.kg/max)*90)}%`}}/><p className="mt-2 truncate text-center text-[9px] text-[#789086]">{h.date.slice(5)}</p></div>)}</div></article><article className="rounded-2xl border bg-white p-5 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Decision metrics</p><div className="mt-5 space-y-3"><Metric label="14-day captured" value={`${total.toFixed(1)} kg`}/><Metric label="Collection events" value={String(data.history.reduce((a,h)=>a+h.collections,0))}/><Metric label="Average / day" value={`${(total/data.history.length).toFixed(1)} kg`}/><Metric label="Forecast confidence" value="82%"/></div></article></section>}
+function Metric({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-[#f3f8f2] p-4"><p className="text-[10px] uppercase tracking-wider text-[#789086]">{label}</p><p className="mt-1 text-2xl font-semibold">{value}</p></div>}
+function VisionView({image,analysis,busy,fileRef,onFile}:{image:string|null;analysis:Detection[]|null;busy:boolean;fileRef:React.RefObject<HTMLInputElement|null>;onFile:(f:File)=>void}){return <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_.8fr]"><article className="rounded-2xl border bg-white p-5 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Image upload / computer vision</p><h2 className="text-xl font-semibold">Analyze recovered material</h2><p className="mt-1 text-xs text-[#789086]">Upload a TideTrap frame or waste photo. The prototype CV engine extracts visual features and classifies likely material.</p><button onClick={()=>fileRef.current?.click()} className="mt-5 flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#bcd8c8] bg-[#f5faf6] p-10"><Upload className="size-7 text-[#168b60]"/><span className="mt-2 text-sm font-bold">{busy?'Analyzing image…':'Choose image'}</span><span className="mt-1 text-[10px] text-[#789086]">JPG, PNG, WEBP</span></button><input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e=>e.target.files?.[0]&&onFile(e.target.files[0])}/>{image&&<img src={image} alt="Uploaded waste sample" className="mt-4 max-h-72 w-full rounded-xl object-cover"/>}</article><article className="rounded-2xl border bg-white p-5 shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wider text-[#769085]">Model output</p><h2 className="text-xl font-semibold">Material detections</h2><div className="mt-4 space-y-2">{analysis?.length?analysis.map((d,i)=><div key={i} className="rounded-xl border p-3"><div className="flex justify-between"><b className="text-sm">{d.label}</b><b className="text-[#168b60]">{(d.confidence*100).toFixed(0)}%</b></div><p className="mt-1 text-[10px] text-[#789086]">{d.massKg}kg estimated · {d.action}</p></div>):<div className="rounded-xl bg-[#f3f8f2] p-5 text-xs text-[#789086]">No uploaded sample yet. Use the analyzer to create a stored waste event.</div>}</div><div className="mt-4 rounded-xl border border-[#f0dfb8] bg-[#fff9e9] p-3 text-[10px] leading-5 text-[#81672e]">Model note: this competition prototype uses a deterministic computer-vision feature extractor and material inference. Replace the adapter with a trained waste-specific detector for production.</div></article></section>}
+function AdminView({role,onDispatch,busy}:{role:Role;onDispatch:()=>void;busy:boolean}){return <section className="mt-5 grid gap-5 lg:grid-cols-2"><article className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><Users className="size-5 text-[#168b60]"/><h2 className="text-lg font-semibold">Role & access control</h2></div><div className="mt-4 space-y-2">{demoUsers.map(u=><div key={u.email} className="flex items-center justify-between rounded-xl border p-3"><div><p className="text-xs font-bold">{u.name}</p><p className="text-[10px] text-[#789086]">{u.email}</p></div><span className="rounded-full bg-[#edf6ef] px-2 py-1 text-[9px] font-bold uppercase">{u.role}</span></div>)}</div><p className="mt-4 text-[10px] text-[#789086]">Current session: <b>{role}</b>. Admin controls are simulated for the prototype.</p></article><article className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><Send className="size-5 text-[#168b60]"/><h2 className="text-lg font-semibold">SMS / logistics integration</h2></div><p className="mt-2 text-xs text-[#789086]">Dispatches are written to the event store and passed through a mock provider adapter. Configure a real provider later without changing the UI.</p><button disabled={busy} onClick={onDispatch} className="mt-5 flex items-center gap-2 rounded-xl bg-[#123d2b] px-4 py-3 text-xs font-bold text-white"><Send className="size-4"/> {busy?'Sending…':'Send test logistics dispatch'}</button></article></section>}
