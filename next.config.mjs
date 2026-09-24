@@ -4,6 +4,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   output: 'export',
+  basePath: '/wastelens-dashboard-prototype',
   trailingSlash: true,
   images: {
     unoptimized: true,
