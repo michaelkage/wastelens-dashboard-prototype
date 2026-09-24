@@ -35,6 +35,13 @@ const detections = [
   { label: 'LDPE Nylon Sachet', confidence: '91%', className: 'detection-red box-three' },
 ]
 
+const productRoutes = [
+  { type: 'PET', examples: 'Bottles', becomes: 'Polyester thread, new bottles, paving tiles', icon: '↗' },
+  { type: 'HDPE', examples: 'Jugs + detergent bottles', becomes: 'School desks, crates, pipes', icon: '◆' },
+  { type: 'PP', examples: 'Caps + yogurt cups', becomes: 'Buckets, basins, plastic furniture', icon: '●' },
+  { type: 'LDPE', examples: 'Sachets + nylon bags', becomes: 'Plastic lumber, benches, road asphalt', icon: '≈' },
+]
+
 export default function Page() {
   const [dispatchSent, setDispatchSent] = useState(false)
 
@@ -122,6 +129,26 @@ export default function Page() {
                 <Hotspot label="Surulere Canal" value="82%" className="left-[20%] top-[27%]" critical /><Hotspot label="Makoko Node A" value="34%" className="left-[55%] top-[64%]" /><Hotspot label="Lekki Channel 2" value="12%" className="right-[12%] top-[22%]" />
               </div>
             </div>
+          </article>
+        </section>
+
+        <section className="mt-5 grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
+          <article className="rounded-2xl border border-[#dce7df] bg-white p-5 shadow-[0_7px_24px_rgba(26,70,49,.045)] sm:p-6">
+            <div className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#769085]"><Leaf className="size-3.5 text-[#1a8a61]" /> Mission control / why WasteLens exists</div>
+            <h2 className="max-w-xl text-xl font-semibold leading-tight tracking-[-0.04em] text-[#17382a]">Stop plastic early. Understand it. Turn it into something useful.</h2>
+            <p className="mt-3 text-sm leading-6 text-[#6b8378]">WasteLens serves residents, market traders and coastal communities affected by flooding and blocked drainage. TideTrap captures the litter before it reaches the lagoon; this dashboard makes every kilogram traceable.</p>
+            <div className="mt-5 grid grid-cols-3 gap-2 border-t border-[#edf2ee] pt-4 text-center">
+              <div><p className="text-lg font-semibold text-[#17382a]">2.5M</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">Tons / year</p></div>
+              <div><p className="text-lg font-semibold text-[#17382a]">&lt;12%</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">Recycled</p></div>
+              <div><p className="text-lg font-semibold text-[#17382a]">4</p><p className="text-[9px] uppercase tracking-wider text-[#8ba097]">SDGs served</p></div>
+            </div>
+          </article>
+          <article className="rounded-2xl border border-[#dce7df] bg-white p-5 shadow-[0_7px_24px_rgba(26,70,49,.045)] sm:p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#769085]"><Factory className="size-3.5 text-[#1a8a61]" /> Material recovery ledger</div><h2 className="text-lg font-semibold tracking-[-0.03em] text-[#17382a]">From TideTrap capture to community product</h2></div><span className="rounded-full bg-[#f0f8d4] px-2.5 py-1 text-[10px] font-bold text-[#66871c]">CIRCULAR LOOP</span></div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {productRoutes.map((route) => <div key={route.type} className="rounded-xl border border-[#e1ebe4] bg-[#fbfdfb] p-3"><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-bold text-[#305546]">{route.type} <span className="font-normal text-[#80958b]">/ {route.examples}</span></p><p className="mt-2 text-[11px] leading-4 text-[#71887d]">Sorted into <strong className="text-[#397154]">{route.becomes}</strong></p></div><span aria-hidden="true" className="text-lg font-semibold text-[#a9ca52]">{route.icon}</span></div></div>)}
+            </div>
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-[#f3f8f2] px-3 py-2 text-[10px] font-semibold text-[#527363]"><CircleDot className="size-3 text-[#1a8a61]" /> Mixed and dirty plastics are routed to Micro-Factory #2 for paving tiles and roofing sheets.</div>
           </article>
         </section>
 
