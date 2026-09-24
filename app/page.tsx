@@ -1,5 +1,6 @@
 'use client'
 import {useEffect,useMemo,useRef,useState} from 'react'
+import {addDemoEvent,demoCsv,demoDispatch,getDemoDashboard} from '@/lib/demo'
 import {Activity,BarChart3,Bell,CheckCircle2,ChevronRight,Download,Factory,Leaf,LogIn,PackageCheck,Radio,RefreshCw,Send,Truck,Upload,Users,Waves,Zap} from 'lucide-react'
 
 type Role='admin'|'operator'|'analyst'
@@ -10,12 +11,12 @@ const demoUsers=[{email:'admin@wastelens.local',password:'admin123',role:'admin'
 
 export default function Page(){
  const[data,setData]=useState<Dashboard|null>(null),[tab,setTab]=useState<'overview'|'nodes'|'analytics'|'vision'|'admin'>('overview'),[role,setRole]=useState<Role>('admin'),[user,setUser]=useState('Demo Admin'),[showLogin,setShowLogin]=useState(false),[login,setLogin]=useState({email:'admin@wastelens.local',password:'admin123'}),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[image,setImage]=useState<string|null>(null),[analysis,setAnalysis]=useState<Detection[]|null>(null);const fileRef=useRef<HTMLInputElement>(null)
- async function refresh(){const r=await fetch('/api/dashboard',{cache:'no-store'});if(r.ok)setData(await r.json())}
+ function refresh(){setData(getDemoDashboard())}
  useEffect(()=>{refresh();const id=setInterval(refresh,5000);return()=>clearInterval(id)},[])
- async function dispatch(){setBusy(true);const r=await fetch('/api/dispatch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nodeId:'tt-04',material:'LDPE',massKg:7.46,destination:'Micro-Factory #2'})});setNotice((await r.json()).message);setBusy(false);refresh()}
- async function doLogin(){const u=demoUsers.find(x=>x.email===login.email&&x.password===login.password);if(!u){setNotice('Demo login failed.');return}await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(u)});setRole(u.role);setUser(u.name);setShowLogin(false);setNotice('Signed in as '+u.role)}
- async function analyze(file:File){setBusy(true);setImage(URL.createObjectURL(file));const form=new FormData();form.append('image',file);const r=await fetch('/api/analyze',{method:'POST',body:form});const b=await r.json();setAnalysis(b.detections||[]);setNotice(b.model||'Vision analysis complete');setBusy(false);refresh()}
- async function exportReport(){const r=await fetch('/api/reports?format=csv');const blob=await r.blob();const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='wastelens-report.csv';a.click();URL.revokeObjectURL(u)}
+ async function dispatch(){setBusy(true);await new Promise(r=>setTimeout(r,650));setNotice(demoDispatch());setBusy(false);refresh()}
+ async function doLogin(){const u=demoUsers.find(x=>x.email===login.email&&x.password===login.password);if(!u){setNotice('Demo login failed.');return}setRole(u.role);setUser(u.name);setShowLogin(false);setNotice('Signed in as '+u.role)}
+ async function analyze(file:File){setBusy(true);setImage(URL.createObjectURL(file));await new Promise(r=>setTimeout(r,900));const seed=getDemoDashboard().detections;const offset=(file.size%17)/1000;const detections=seed.map((d,i)=>({...d,confidence:Math.max(.78,d.confidence-offset-i*.006)}));addDemoEvent(detections);setAnalysis(detections);setNotice('Prototype CV inference complete — local demo mode');setBusy(false);refresh()}
+ async function exportReport(){const blob=new Blob([demoCsv()],{type:'text/csv;charset=utf-8'});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='wastelens-report.csv';a.click();URL.revokeObjectURL(u)}
  const total=useMemo(()=>data?.history.reduce((a,h)=>a+h.kg,0)??0,[data])
  if(!data)return <main className="min-h-screen bg-[#071d16] grid place-items-center text-white"><div className="text-center"><div className="mx-auto mb-4 size-12 animate-pulse rounded-2xl bg-[#d7f36d]"/><p className="text-sm text-[#b8d1c4]">Initializing WasteLens intelligence layer…</p></div></main>
  return <main className="min-h-screen bg-[#f3f7f4] text-[#14251d]"><div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
