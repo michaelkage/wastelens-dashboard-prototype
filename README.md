@@ -34,3 +34,21 @@ These are demonstration credentials only.
     pnpm dev
 
 WasteLens is part of the wider **Terranova** project created by members of **Junior Achievement Nigeria (JAN)**.
+
+## GitHub Pages mode
+
+The public prototype is now a fully static Next.js export and deploys from GitHub Actions to GitHub Pages. The browser uses a local demo intelligence engine so the dashboard remains interactive without server APIs.
+
+Static mode includes:
+- simulated live TideTrap telemetry with five-second refresh
+- client-side role switching
+- client-side CV/demo inference for uploaded images
+- browser-persisted demo state
+- simulated logistics dispatch
+- CSV report export
+- predictive hotspot and circular-economy views
+
+The original server-side store/engine code remains in the repository as provider-side reference architecture for a future hosted backend. Production integrations such as real authentication, persistent database storage, trained CV inference, physical TideTrap telemetry, SMS delivery, and external forecasting can be connected later without redesigning the dashboard.
+
+GitHub Pages URL:
+https://michaelkage.github.io/wastelens-dashboard-prototype/
