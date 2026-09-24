@@ -1,33 +1,36 @@
-# wastelens-dashboard-prototype
+# WasteLens — Terranova
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+WasteLens is the intelligence and operations layer of **Terranova**, an innovation project created by members of **Junior Achievement Nigeria (JAN)**.
 
-## Built with v0
+## Implemented prototype capabilities
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+- Predictive hotspot analysis and collection forecasting
+- AI-generated operational recommendations
+- Runtime waste-event storage and TideTrap telemetry ingestion
+- Image upload and computer-vision prototype inference
+- Real-time node monitoring with live polling
+- Role-based prototype authentication: admin, operator, analyst
+- Historical analytics and CSV reporting
+- Logistics/SMS provider adapter with a mock provider
+- Circular-economy routing from captured material to micro-factory output
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_2FTP456nw9u16HsheutupwVW1Eap)
+## Architecture
 
-## Getting Started
+This repository is provider-neutral. It contains no deployment-platform analytics SDK or platform-specific runtime code. Standard Next.js route handlers expose the prototype API.
 
-First, run the development server:
+The current store is an in-memory runtime store seeded with TideTrap telemetry. It resets when the server restarts. Replace the store with a durable database for production. The CV and SMS adapters are isolated so they can later be replaced with a trained waste-specific detector and a real messaging/logistics provider.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## Demo accounts
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- admin@wastelens.local / admin123
+- operator@wastelens.local / operator123
+- analyst@wastelens.local / analyst123
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+These are demonstration credentials only.
 
-## Learn More
+## Run
 
-To learn more, take a look at the following resources:
+    pnpm install
+    pnpm dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+WasteLens is part of the wider **Terranova** project created by members of **Junior Achievement Nigeria (JAN)**.
